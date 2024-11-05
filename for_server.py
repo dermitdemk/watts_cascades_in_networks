@@ -1,6 +1,5 @@
 import pandas as pd 
 import numpy as np
-import os
 class network:
     def __init__(self):
         ## in network werden alle verbindungen zwischen nodes gespeichert
@@ -104,12 +103,29 @@ class network:
         return False
 
 
-    def check_cascade(self) -> None:
+    def check_cascade(self) ->list:
+        """
+        Checks for casacdes
+
+        iterates over every node in the network to check if he will swich colore
+        stops itatatien if natwork stabel, no node chages colore 
+        returns the size of the network 
+        
+        Parameters:
+        None 
+
+        Returns:
+        list: List of the size of the cascade for every iteration of checking
+        """
         ## ruft jeden node auf, schaut ob er seine farbe ändern würde und tut das
         ## ruft sooft jeden node auf bis sich nichts mehr ändert
+        ## speichert nachjedem durchgang wie viele jetzt rot sind und gibt es zurück
+        counter = 0
+        zwischen_stand = []
         exitWhile = False
         while exitWhile == False:
             print('checking chascade ')
+            counter += 1
             nodesToCheck = self.nodeInfo.query('c == 1').nodeId.to_list()
             for singleNodeToCheck in nodesToCheck:
                 connectionsOfNode = self.find_all_conection_of_node(singleNodeToCheck)
@@ -121,15 +137,28 @@ class network:
                     meanCOfConections = self.get_mean_c_of_node(singleConnectionNode)
                     if meanCOfConections>pOfNode:
                         self.update_node_c(singleConnectionNode,1)
-            nodesToCompare = self.nodeInfo.query('c == 1').nodeId.to_list()    
+            nodesToCompare = self.nodeInfo.query('c == 1').nodeId.to_list()
+            zwischen_stand.append(self.size_of_cascade())
             if nodesToCheck == nodesToCompare:
                 exitWhile = True
+        return zwischen_stand
 
     def size_of_cascade(self)->int:
         ## gibt an wie viele nodes die Farbe 1 haben
 
         return self.nodeInfo['c'].sum()
     def generate_a_network_version1 (self,size:int, mean_z:int, p:int):
+        """
+        generates a new network with given atributs. Generates connections by drawing a sample of nodes.
+
+        Parameters:
+        size: int the size of the network that should be genareted
+        mean_z: int the mean number of edges the netwrok should have
+        p: the value of p each node in the network should have
+
+        Returns:
+        DataFrame of the network connetions
+        """
     ## hier wird ein netzwerk genneriert in dem aus den existiernenen nodes zufällig eine anzahl an nodes gezogen wird und diese mit einem node verbunden werden.
         for i in range(0,size):
             self.add_node(nodeId=i,p=p,c=0)
@@ -142,6 +171,17 @@ class network:
         return self.network
     
     def generate_a_network_version2 (self,size:int, z:int, p:int):
+        """
+        generates a new network with given atributs. Generates connections by calculating the probibiltiy of connection to every node.
+
+        Parameters:
+        size: int the size of the network that should be genareted
+        mean_z: int the mean number of edges the netwrok should have
+        p: the value of p each node in the network should have
+
+        Returns:
+        DataFrame of the network connetions
+        """
         from itertools import combinations
     ## hier wird ein netzwerk genneriert in dem jeder node mit jedem anderen mit der wahrscheinlichkeit von p = z/n eine verbindung aufbaut
         connection_p = z/size
@@ -154,7 +194,15 @@ class network:
             self.add_connection(connection)
         return self.network
     
-    def shock_network (self,size:int):
+    def shock_network (self,size:int)->None:
+        """
+        changes the colore of random nodes
+
+        Parameters: 
+        size: int the number of nodes which colores should change 
+        Return:
+        None
+        """
         ## resetst the colour of network and then changes the colour of n random nodes
         if len(self.nodeInfo)<size:
             print(f'WARNING!! the network is to small for the shock, networksize: {len(self.nodeInfo)}')
@@ -164,7 +212,7 @@ class network:
         for node in shock_nodes:
             self.update_node_c(node=node,c=1)
 
-    def size_of_conected_cluster(self):
+    def size_of_conected_cluster(self)->list[int]:
         ## gibt die größe aller connectedter cluster in einem netzwek aus
         size_of_cluster =[]
         nodes_to_check = list(self.nodeInfo.nodeId)
@@ -176,7 +224,10 @@ class network:
         size_of_cluster.sort(reverse=True)
         return size_of_cluster
 
-
+        
+        
+        
+import os 
 start_from_save = False
 result_df = pd.DataFrame(columns=['z','p','size_of_cascade'])
 start_z = 0
@@ -191,22 +242,18 @@ if os.path.exists(file_name):
 print(f"staring at z: {start_z}, p:{start_p}")
 
 
-
-result_df = pd.DataFrame(columns=['z','p','size_of_cascade'])
+result_df = pd.DataFrame(columns=['z','p','size_of_cascade','verlauf'])
 for i in range(start_z,16):
     print(f"run nummebre {i}")
     for j in range(start_p,26,1):
         j = j*0.01
         for _ in range(0,10):
             n = network()
-            n.generate_a_network_version2(size=5000,z=i, p=j)
+            n.generate_a_network_version2(size=100,z=i, p=j)
             n.shock_network(size = 30)
-            n.check_cascade()
+            verlauf = n.check_cascade()
             cascade_size = n.size_of_cascade()
-            result_df.loc[len(result_df)] = {'z':i,'p':j,'size_of_cascade':cascade_size}
+            result_df.loc[len(result_df)] = {'z':i,'p':j,'size_of_cascade':cascade_size,'verlauf':verlauf}
         result_df.to_csv(file_name,index=False)
 
 
-
-        #print(n.size_of_cascade())
-        #print(n.size_of_conected_cluster())
