@@ -237,23 +237,22 @@ file_name = 'result_df.csv'
 if os.path.exists(file_name):
     result_df = pd.read_csv(file_name)
     start_z = result_df['z'].iloc[-1] +1
-    start_p = int(result_df['p'].iloc[-1]*100 +1)
+    last_p = int(result_df['p'].iloc[-1]*100 +1)
     start_from_save = True    
 print(f"staring at z: {start_z}, p:{start_p}")
 
-
-result_df = pd.DataFrame(columns=['z','p','size_of_cascade','verlauf'])
 for i in range(start_z,16):
     print(f"run nummebre {i}")
     for j in range(start_p,26,1):
         j = j*0.01
+        if j <last_p and start_from_save == True:
+            pass
+        start_from_save = False
         for _ in range(0,10):
             n = network()
-            n.generate_a_network_version2(size=100,z=i, p=j)
+            n.generate_a_network_version2(size=5000,z=i, p=j)
             n.shock_network(size = 30)
             verlauf = n.check_cascade()
             cascade_size = n.size_of_cascade()
             result_df.loc[len(result_df)] = {'z':i,'p':j,'size_of_cascade':cascade_size,'verlauf':verlauf}
         result_df.to_csv(file_name,index=False)
-
-
