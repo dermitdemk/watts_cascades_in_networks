@@ -236,8 +236,8 @@ start_p = 10
 file_name = 'result_df.csv'
 if os.path.exists(file_name):
     result_df = pd.read_csv(file_name)
-    start_z = result_df['z'].iloc[-1] +1
-    last_p = int(result_df['p'].iloc[-1]*100 +1)
+    start_z = result_df['z'].iloc[-1]
+    last_p = int(result_df['p'].iloc[-1]*100)
     start_from_save = True    
 print(f"staring at z: {start_z}, p:{start_p}")
 
