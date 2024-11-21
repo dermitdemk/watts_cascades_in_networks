@@ -1,3 +1,39 @@
+import json
+
+def extract_first_cell(ipynb_file: str, output_py_file: str):
+    """
+    Extracts the first code cell from a Jupyter notebook and writes it to a .py file.
+
+    :param ipynb_file: Path to the Jupyter notebook (.ipynb) file.
+    :param output_py_file: Path to the output Python (.py) file.
+    """
+    try:
+        # Load the notebook
+        with open(ipynb_file, 'r', encoding='utf-8') as f:
+            notebook = json.load(f)
+        
+        # Find the first code cell
+        first_cell = next(
+            (cell for cell in notebook.get('cells', []) if cell.get('cell_type') == 'code'), 
+            None
+        )
+        
+        if first_cell is None:
+            raise ValueError("No code cell found in the notebook.")
+
+        # Write the source code of the first cell to the output file
+        with open(output_py_file, 'w', encoding='utf-8') as f:
+            f.write("# Extracted from the notebook\n")
+            f.write("\n".join(first_cell.get('source', [])))
+
+        print(f"Successfully extracted the first cell to {output_py_file}.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+# Example usage
+extract_first_cell("code/main.ipynb", "code/network.py")
+
+
 import unittest
 from network import network
 import pandas as pd
