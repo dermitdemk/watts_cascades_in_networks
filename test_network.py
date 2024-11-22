@@ -37,6 +37,7 @@ extract_first_cell("code/main.ipynb", "code/network.py")
 import unittest
 from network import network
 import pandas as pd
+from copy import deepcopy
 
 class TestNetwork(unittest.TestCase):
     
@@ -52,6 +53,15 @@ class TestNetwork(unittest.TestCase):
         self.simpleNetwork.add_connection([2,4])
         self.simpleNetwork.add_connection([3,2])
         self.simpleNetwork.add_connection([6,7])
+
+        self.secondNetwork = network()
+        for i in range(1,9):
+            self.secondNetwork.add_node(info_as_list=[i,0.1,0])
+        for i in range(1,9):
+            self.secondNetwork.add_connection([i,((i)%8)+1])
+
+        
+
         
         pass
     
@@ -184,12 +194,18 @@ class TestNetwork(unittest.TestCase):
     def test_check_cascade(self):
         self.assertEqual(self.simpleNetwork.check_cascade(),[2],'size of cascade wrong')
         self.test_node_info()
+
+        testNetwork = deepcopy(self.secondNetwork)
+        testNetwork.shock_network(1,1)
+        self.assertEqual(testNetwork.check_cascade(),[3, 5, 7, 8, 8],'size of cascade wrong')
+        self.assertEqual(testNetwork.nodeInfo['c'].mean(),1,'cascade did not happend')
+
+        
     
     def test_size_of_cascade(self):
         self.assertEqual(self.simpleNetwork.size_of_cascade(),2,'size of cascade wrong')
 
     def test_shock_network(self):
-        from copy import deepcopy
         for sizeOfShock in range(1,7):
             networkCopy = deepcopy(self.simpleNetwork)
             networkCopy.shock_network(sizeOfShock,5.0)
