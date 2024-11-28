@@ -72,6 +72,9 @@ class TestNetwork(unittest.TestCase):
         for i in range(1,9):
             self.second_network.add_connection([i,((i)%8)+1])
         
+        #######################################################
+        ############## Temporal networks#######################
+        #######################################################
 
         ## third network
         self.simple_temporal_network = network()
@@ -89,6 +92,14 @@ class TestNetwork(unittest.TestCase):
         self.simple_temporal_network.add_connection([3,2,3])
         self.simple_temporal_network.add_connection([6,7,2])
 
+
+
+        ## second temporal network
+        self.second_temporal_network = network()
+        for i in range(1,9):
+            self.second_temporal_network.add_node(info_as_list=[i,0.1,0])
+        for i in range(1,9):
+            self.second_temporal_network.add_connection([i,((i)%8)+1,i%6])
         
         pass
     
@@ -279,8 +290,11 @@ class TestNetwork(unittest.TestCase):
         }
         for node, p in p_of_node.items():
             self.assertEqual(self.simple_network.get_p_of_node(node),p,f'p of node {node} is not {p}')
+            self.assertEqual(self.simple_temporal_network.get_p_of_node(node),p, f'p of node {node} is not {p}')
     
     def test_color_change_of_node(self):
+        ## TODO 
+        ## ein netzwerk testen das hier auch die farbe wechselt
         color_change ={
             1:{'bool':False,'color':0,},
             2:{'bool':False,'color':0,},
@@ -294,19 +308,32 @@ class TestNetwork(unittest.TestCase):
             self.assertEqual(self.simple_network.check_c_change_of_singel_node(node),color_info['bool'],f'Node {node}, did or did not changed color')
             self.assertTrue(self.simple_network.test_if_c_is_color(node,color_info['color']),f'node {node} did not swich to color {color_info['color']}')
 
+        for time in range(0,5):
+            for node in range(1,8):
+                self.assertEqual(self.simple_temporal_network.check_c_change_of_singel_node(node = node, time = time), False, f'Node {node}, did or did not changed color at time {time}')
+
     def test_check_cascade(self):
         self.assertEqual(self.simple_network.check_cascade(),[2],'size of cascade wrong')
+        self.assertEqual(self.simple_temporal_network.check_cascade(),[2,2,2,2,2],'size of cascade wrong')
         self.test_node_info()
 
+        ## TODO 
+        ## test hier ein temporal network
         testNetwork = deepcopy(self.second_network)
         testNetwork.shock_network(1,1)
         self.assertEqual(testNetwork.check_cascade(),[3, 5, 7, 8, 8],'size of cascade wrong')
         self.assertEqual(testNetwork.nodeInfo['c'].mean(),1,'cascade did not happend')
 
+        test_temporal_Network = deepcopy(self.second_temporal_network)
+        test_temporal_Network.nodeInfo.iloc[3]['c']= 1.0
+        self.assertEqual(test_temporal_Network.check_cascade(),[1, 1, 1, 2, 2, 3, 3, 4, 4] ,'size of cascade wrong')
+        self.assertAlmostEqual(test_temporal_Network.nodeInfo['c'].mean(),0.5, 'cascade did not happend')
+
         
     
     def test_size_of_cascade(self):
         self.assertEqual(self.simple_network.size_of_cascade(),2,'size of cascade wrong')
+        self.assertEqual(self.simple_temporal_network.size_of_cascade(),2,'size of cascade wrong')
 
     def test_shock_network(self):
         for sizeOfShock in range(1,7):
