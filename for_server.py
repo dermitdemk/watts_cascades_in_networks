@@ -6,7 +6,7 @@ import os
 # Initialize variables
 result_df = pd.DataFrame(columns=['z', 'p', 'size_of_cascade', 'verlauf'])
 start_z = 0
-start_p = 0
+start_p = 0.1
 
 file_name = 'result_df.csv'
 
