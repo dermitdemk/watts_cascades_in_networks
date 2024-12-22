@@ -31,7 +31,7 @@ for z in range(start_z, 17):  # Iterate over z
             n = network.network()
             n.generate_a_network_version2(size=5000, z=z, p=p)
             n.shock_network(size=30, c=1)
-            verlauf = n.check_cascade()
+            verlauf = n.check_cascade_with_new_nodes()
             cascade_size = n.size_of_cascade()
 
             # Save the result
