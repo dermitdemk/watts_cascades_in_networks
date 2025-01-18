@@ -327,8 +327,8 @@ class TestNetwork(unittest.TestCase):
 
         test_temporal_Network = deepcopy(self.second_temporal_network)
         test_temporal_Network.nodes[3].c = 1.0
-        #self.assertEqual(test_temporal_Network.check_cascade_with_new_nodes(),[1, 1, 1, 2, 2, 3, 3, 4, 4] ,'size of cascade wrong')
-        self.assertAlmostEqual(np.mean([n.c for n in testNetwork.nodes.values()]),0.5, 'cascade did not happend')
+        self.assertEqual(test_temporal_Network.check_cascade_with_new_nodes(),[2, 2, 3, 3, 4, 4, 5, 5] ,'size of cascade wrong') #[1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+        self.assertEqual(np.mean([n.c for n in test_temporal_Network.nodes.values()]),0.625, 'cascade did not happend')
 
         
     
